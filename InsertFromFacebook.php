@@ -3,11 +3,11 @@
 /*
 Plugin Name: InsertFromFacebook
 Plugin URI: 
-Description: 
+Description: Wordpress plugin which allow you add blog posts from Facebook profile and page walls.
 Version: 1.0.0
 Author: SebaZ
 Author URI: 
-License: GPLv2
+License: GPLv3
 */
 
 /* 
