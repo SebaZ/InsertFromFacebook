@@ -42,6 +42,12 @@ function iff_settings_page(){
         $r = iff_updateMenuParamsFromFbids();
     }
     $value = get_option('fbids', $default = "205748262962024\n184965671567736\n475370040463\n271502918243\n449763581844923");
+    
+    $fbids_menu_params = get_option('fbids_menu_params');
+    $fbnames = null;
+    foreach($fbids_menu_params as $key => $v) {
+        $fbnames .= $v."\n"; 
+    }
   
     include('include/options.php');
 }
@@ -49,6 +55,36 @@ function iff_settings_page(){
 function iff_posts_list_page(){
     $page = $_GET['page'];
     $fbid = str_replace('--iff-plugin', '', $page);
+    $msg = '';
+    $category = get_term_by('name', 'Facebook', 'category');
+    
+    if (isset($_POST['dodaj_post']) && $category !== false) {
+        $post = array();
+        $post['post_status']   = 'publish';
+        $post['post_type']     = 'post';
+        $post['post_title']    = wp_trim_words($_POST['fb_post_message'], $num_words = 8, $more = null);
+        $post['post_content']  = $_POST['fb_post_message'];
+        $post['post_category'] = array($category->term_id);
+        //$post['post_date'] = date('c',strtotime('2010-04-08 13:46:43'));
+        $post['post_date'] = $_POST['fb_post_date'];
+
+        // Create Post
+        $post_id = wp_insert_post( $post );        
+        $image = media_sideload_image($_POST['fb_photo_url'], $post_id, $desc);        
+        $media = get_attached_media('image', $post_id);
+        foreach ($media as $media_id => $media_object) {
+            set_post_thumbnail($post_id, $media_id);
+        }
+        
+        add_post_meta($post_id, 'fb_post_id', $_POST['fb_post_id']);
+        add_post_meta($post_id, 'fb_post_url', $_POST['fb_post_url']);
+        add_post_meta($post_id, 'fb_attachment_id', $_POST['fb_attachment_id']);
+        add_post_meta($post_id, 'fb_attachment_type', $_POST['fb_attachment_type']);
+        add_post_meta($post_id, 'fb_attachment_url', $_POST['fb_attachment_url']);
+        
+        $msg = 'Wpis dodany!';
+        unset($post);
+    }     
     
     $posts = iff_getdataFromFID($fbid);
     $page_name = $posts['data'][0]['from']['name'];
@@ -81,8 +117,8 @@ function iff_getdataFromFID($fbid, $post_limit = 50) {
     $access_token = $access_token_array[rand(0, 14)];
     $graph_query = 'feed';
     
-    $url = "https://graph.facebook.com/$fbid/$graph_query?fields=id,from,message,link,source,type,status_type,object_id,created_time&access_token=$access_token&limit=$post_limit&locale=pl_PL";
-    
+    $url = "https://graph.facebook.com/$fbid/$graph_query?fields=id,from,message,link,full_picture,attachments,source,type,created_time&access_token=$access_token&limit=$post_limit&locale=pl_PL";
+
     //Auto detect request method
     if(is_callable('curl_init')){
         $ch = curl_init();
@@ -106,7 +142,6 @@ function iff_getdataFromFID($fbid, $post_limit = 50) {
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_ENCODING, '');
         $feedData = curl_exec($ch);
-        echo curl_error($ch).'<br/>';
         curl_close($ch);
     } elseif ( (ini_get('allow_url_fopen') == 1 || ini_get('allow_url_fopen') === TRUE ) && in_array('https', stream_get_wrappers()) ) {
         echo 'file_get_contents <br />';
@@ -142,5 +177,3 @@ function iff_updateMenuParamsFromFbids() {
     }
     return $fbids_menu_params;
 }
-
-

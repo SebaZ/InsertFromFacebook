@@ -3,8 +3,12 @@
 Podaj identyfikatory profili lub fanpage Facebooka, każdy w nowej linii.
 </p>
 <form method="post">
-    <label for="fbids">Identyfikatory FB</label><br />
+    <div style="float:left;"><label for="fbids">Identyfikatory FB</label><br />
     <textarea name="fbids" id="fbids" rows="10" cols="40"><?php echo $value; ?></textarea>
+    </div>
+    <div><label for="fbnames">Nazwy (tylko informacyjnie)</label><br />
+    <textarea name="fbnames" readonly rows="10" cols="80"><?php echo $fbnames; ?></textarea>
+    </div>
     <br /><i style="color: #666; font-size: 11px;">Np. 205748262962024 dla Kulczyk Foundation</i>
     <div class="cff-tooltip cff-more-info">
         <ul>
