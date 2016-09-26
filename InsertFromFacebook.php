@@ -22,7 +22,33 @@ function iff_setup_menu(){
 }
  
 function iff_settings_page(){
-    add_submenu_page('iff-plugin', 'Uok', 'awienia', 'manage_options', 'iff-pdfgin', 'iff_settings_page');
-    echo "<h1>Insert From Facebook!</h1>";
+  include('include/options.php');
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+?>
+
 
