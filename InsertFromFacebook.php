@@ -96,6 +96,8 @@ function iff_posts_list_page(){
             add_post_meta($post_id, 'fb_attachment_id', $_POST['fb_attachment_id']);
             add_post_meta($post_id, 'fb_attachment_type', $_POST['fb_attachment_type']);
             add_post_meta($post_id, 'fb_attachment_url', $_POST['fb_attachment_url']);
+            
+            $postslist[$post_id] = $post_id;
 
             $msg = 'Wpis dodany!';
         }
