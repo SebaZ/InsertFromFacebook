@@ -53,43 +53,55 @@ function iff_settings_page(){
 }
 
 function iff_posts_list_page(){
+    global $wpdb;
     $page = $_GET['page'];
     $fbid = str_replace('--iff-plugin', '', $page);
-    $msg = '';
-    $category = get_term_by('name', 'Facebook', 'category');
-    
-    if (isset($_POST['dodaj_post']) && $category !== false) {
-        $post = array();
-        $post['post_status']   = 'publish';
-        $post['post_type']     = 'post';
-        $post['post_title']    = wp_trim_words($_POST['fb_post_message'], $num_words = 8, $more = null);
-        $post['post_content']  = $_POST['fb_post_message'];
-        $post['post_category'] = array($category->term_id);
-        //$post['post_date'] = date('c',strtotime('2010-04-08 13:46:43'));
-        $post['post_date'] = $_POST['fb_post_date'];
-
-        // Create Post
-        $post_id = wp_insert_post( $post );        
-        $image = media_sideload_image($_POST['fb_photo_url'], $post_id, $desc);        
-        $media = get_attached_media('image', $post_id);
-        foreach ($media as $media_id => $media_object) {
-            set_post_thumbnail($post_id, $media_id);
-        }
-        
-        add_post_meta($post_id, 'fb_post_id', $_POST['fb_post_id']);
-        add_post_meta($post_id, 'fb_post_url', $_POST['fb_post_url']);
-        add_post_meta($post_id, 'fb_attachment_id', $_POST['fb_attachment_id']);
-        add_post_meta($post_id, 'fb_attachment_type', $_POST['fb_attachment_type']);
-        add_post_meta($post_id, 'fb_attachment_url', $_POST['fb_attachment_url']);
-        
-        $msg = 'Wpis dodany!';
-        unset($post);
-    }     
     
     $posts = iff_getdataFromFID($fbid);
     $page_name = $posts['data'][0]['from']['name'];
     $posts = $posts['data'];
     
+    $querystr = "
+        SELECT $wpdb->postmeta.meta_value AS fb_post_id 
+        FROM $wpdb->postmeta
+        WHERE $wpdb->postmeta.meta_key = 'fb_post_id' 
+    ";
+
+    $postslist = $wpdb->get_results($querystr, OBJECT_K);
+    
+    $msg = '';
+    $category = get_term_by('name', 'Facebook', 'category'); 
+    
+    if (isset($_POST['dodaj_post']) && $category !== false) {
+        $post = array();
+        $post['post_status']   = 'publish';
+        $post['post_type']     = 'post';
+        $post_message = !empty($_POST['fb_post_message']) ? $_POST['fb_post_message'] : $page_name;
+        $post['post_title']    = wp_trim_words($post_message, $num_words = 8, $more = null);
+        $post['post_content']  = $post_message;
+        $post['post_category'] = array($category->term_id);
+        //$post['post_date'] = date('c',strtotime('2010-04-08 13:46:43'));
+        $post['post_date'] = $_POST['fb_post_date'];
+
+        // Create Post
+        if($post_id = wp_insert_post($post)) {        
+            $image = media_sideload_image($_POST['fb_photo_url'], $post_id);        
+            $media = get_attached_media('image', $post_id);
+            foreach ($media as $media_id => $media_object) {
+                set_post_thumbnail($post_id, $media_id);
+            }
+
+            add_post_meta($post_id, 'fb_post_id', $_POST['fb_post_id']);
+            add_post_meta($post_id, 'fb_post_url', $_POST['fb_post_url']);
+            add_post_meta($post_id, 'fb_attachment_id', $_POST['fb_attachment_id']);
+            add_post_meta($post_id, 'fb_attachment_type', $_POST['fb_attachment_type']);
+            add_post_meta($post_id, 'fb_attachment_url', $_POST['fb_attachment_url']);
+
+            $msg = 'Wpis dodany!';
+        }
+        unset($post);
+    }     
+        
     include('include/posts_list.php');
 }
 

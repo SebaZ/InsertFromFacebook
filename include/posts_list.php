@@ -11,6 +11,9 @@
     <?php 
     //print_r($posts);
     foreach ($posts as $key => $post) {
+        if (array_key_exists($post['id'], $postslist)) {
+            continue;
+        }
         switch ($post['type']) {
             case 'video': 
                 $typ_txt = 'Wideo';
@@ -53,7 +56,10 @@
                     <input type="submit" value="Dodaj post" name="dodaj_post" class="button button-primary button-large">
                 <?php } ?>    
             </form>
-                <p>Pamiętaj! W celu dodawania wpisów musi istnieć kategoria o nazwie "Facebook".</p>
+                <?php if($category === false) { ?>
+                    <p>Pamiętaj! W celu dodawania wpisów musi istnieć kategoria o nazwie "Facebook".</p>
+                <?php } ?> 
+                
             
         </td>
     </tr>
